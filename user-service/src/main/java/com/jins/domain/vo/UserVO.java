@@ -22,9 +22,4 @@ public class UserVO {
      * 手机号码
      */
     private String phone;
-
-    /**
-     * token
-     */
-    private String token;
 }

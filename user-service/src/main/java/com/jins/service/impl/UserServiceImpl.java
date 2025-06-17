@@ -1,5 +1,8 @@
 package com.jins.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jins.constants.RedisConstants;
 import com.jins.constants.Status;
@@ -39,7 +42,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         user = new User();
         Long p = new Random().nextLong(9999);
-        System.out.println("--------------------------------------------------------- " + p);
         user.setUserId(p);
         user.setUsername(registForm.getUsername());
         // TODO
@@ -60,6 +62,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     public String login(LoginForm loginForm) {
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper
+                .eq(StringUtils.isNotBlank(loginForm.getUsername()), User::getUsername, loginForm.getUsername())
+                .eq(StringUtils.isNotBlank(loginForm.getPassword()), User::getPassword, loginForm.getPassword());
+
         //查询用户
         User user = lambdaQuery()
                 .eq(User::getUsername, loginForm.getUsername())
@@ -79,13 +86,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         //jwt不设置过期时间，只设置redis过期时间。
         redisTemplate.expire(RedisConstants.USER_TOKEN_KEY + token, RedisConstants.USER_TOKEN_TTL, TimeUnit.MINUTES);
-
-        //把查到的user的一些属性赋值给userVo
-        UserVO userVO = new UserVO();
-        userVO.setUsername(user.getUsername());
-        userVO.setEmail(user.getEmail());
-        userVO.setPhone(user.getPhone());
-        userVO.setToken(token);
 
         return token;
     }

@@ -14,7 +14,7 @@ spring:
   # Redis
   redis:
     database: 3
-    host: 192.168.0.102
+    host: 192.168.237.101
     port: 6379
     password: 123456
     lettuce:
@@ -24,6 +24,16 @@ spring:
         max-idle: 8
         max-wait: -1ms
     connect-timeout: 30000ms
+
+# 设置日志级别为DEBUG（开发环境）
+logging:
+  level:
+    com:
+      jins:
+        mapper: debug
+        service: info
+        controller: info
+
 mybatis-plus:
   configuration:
     default-enum-type-handler: com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler

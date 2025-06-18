@@ -41,7 +41,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
 
         user = new User();
-        Long p = new Random().nextLong(9999);
+        Long p = new Random().nextLong();
         user.setUserId(p);
         user.setUsername(registForm.getUsername());
         // TODO

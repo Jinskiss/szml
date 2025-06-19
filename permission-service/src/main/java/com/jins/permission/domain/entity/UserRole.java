@@ -26,5 +26,5 @@ public class UserRole {
     /**
      * 角色ID（关联roles表）
      */
-    private Integer roleId;
+    private Long roleId;
 }

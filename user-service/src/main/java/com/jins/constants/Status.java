@@ -18,7 +18,12 @@ public class Status {
     /**
      * 未找到结果
      */
-    public static final String NO_RESULT = "510";
+    public static final String CODE_404 = "404";
+
+    /**
+     * 客户端错误
+     */
+    public static final String CODE_400 = "400";
 
     /**
      * 无权限

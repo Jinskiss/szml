@@ -22,7 +22,8 @@ public class PermissionController {
     @PostMapping("/bindDefaultRole")
     public R bindDefaultRole(@RequestParam Long userId) {
         permissionService.bindDefaultRole(userId);
-        return R.success();
+
+        return R.success("角色绑定成功");
     }
 
     /**
@@ -31,6 +32,7 @@ public class PermissionController {
     @GetMapping("/getRoleCode")
     public R<String> getUserRoleCode(@RequestParam Long userId) {
         String roleCode = permissionService.getUserRoleCode(userId);
+
         return R.success(roleCode);
     }
 
@@ -39,8 +41,12 @@ public class PermissionController {
      */
     @PostMapping("/upgradeToAdmin")
     public R upgradeToAdmin(@RequestParam Long userId) {
+        // TODO
+        // 判断是否为超管
+
         permissionService.upgradeToAdmin(userId);
-        return R.success();
+
+        return R.success("升级管理员成功");
     }
 
     /**
@@ -48,18 +54,11 @@ public class PermissionController {
      */
     @PostMapping("/downgradeToUser")
     public R downgradeToUser(@RequestParam Long userId) {
-        permissionService.downgradeToUser(userId);
-        return R.success();
-    }
+        // TODO
+        // 判断是否为超管
 
-    /**
-     * 检查用户是否拥有指定角色
-     */
-    @GetMapping("/hasRole")
-    public R<Boolean> hasRole(
-            @RequestParam Long userId, 
-            @RequestParam String requiredRole) {
-        boolean hasRole = permissionService.hasRole(userId, requiredRole);
-        return R.success(hasRole);
+        permissionService.downgradeToUser(userId);
+
+        return R.success("降级用户成功");
     }
 }

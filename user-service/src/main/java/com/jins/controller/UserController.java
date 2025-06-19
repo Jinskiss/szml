@@ -1,6 +1,5 @@
 package com.jins.controller;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jins.common.R;
 import com.jins.domain.entity.User;
@@ -64,6 +63,7 @@ public class UserController {
         if (!userPage.getRecords().isEmpty()) {
             for (User user : userPage.getRecords()) {
                 UserVO userVO = new UserVO();
+                userVO.setUserId(user.getUserId());
                 userVO.setUsername(user.getUsername());
                 userVO.setEmail(user.getEmail());
                 userVO.setPhone(user.getPhone());
@@ -89,6 +89,7 @@ public class UserController {
         User user = userService.getById(userId);
 
         UserVO userVO = new UserVO();
+        userVO.setUserId(user.getUserId());
         userVO.setUsername(user.getUsername());
         userVO.setEmail(user.getEmail());
         userVO.setPhone(user.getPhone());

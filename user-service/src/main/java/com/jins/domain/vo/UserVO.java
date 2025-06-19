@@ -9,6 +9,11 @@ import java.util.Date;
 @Data
 public class UserVO {
     /**
+     * 用户ID
+     */
+    private Long userId;
+
+    /**
      * 用户名
      */
     private String username;

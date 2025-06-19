@@ -1,5 +1,6 @@
 package com.jins.exception;
 
+
 import com.jins.constants.Status;
 
 /**

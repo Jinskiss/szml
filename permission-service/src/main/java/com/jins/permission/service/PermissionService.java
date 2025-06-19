@@ -1,9 +1,12 @@
 package com.jins.permission.service;
 
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.jins.permission.domain.entity.Role;
+
 /**
  * 权限服务接口
  */
-public interface PermissionService {
+public interface PermissionService extends IService<Role> {
 
     /**
      * 为用户绑定默认角色（普通用户）
@@ -29,12 +32,4 @@ public interface PermissionService {
      * @param userId 用户ID
      */
     void downgradeToUser(Long userId);
-
-    /**
-     * 检查用户是否拥有指定角色
-     * @param userId 用户ID
-     * @param requiredRole 需要检查的角色代码
-     * @return 是否拥有
-     */
-    boolean hasRole(Long userId, String requiredRole);
 }

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.jins.client.PermissionClient;
 import com.jins.constants.RedisConstants;
 import com.jins.constants.Status;
 import com.jins.domain.entity.User;
@@ -26,7 +27,10 @@ import java.util.concurrent.TimeUnit;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+
     private final RedisTemplate redisTemplate;
+
+    private final PermissionClient permissionClient;
 
     @Override
     public User register(RegistForm registForm) {
@@ -50,6 +54,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setPhone(registForm.getPhone());
         user.setGmtCreate(new Date());
         save(user);
+
+        permissionClient.bindDefaultRole(user.getUserId());
 
         return user;
     }

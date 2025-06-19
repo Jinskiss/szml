@@ -1,6 +1,6 @@
 package com.jins.permission.controller;
 
-import com.jins.permission.common.R;
+import com.jins.common.R;
 import com.jins.permission.service.PermissionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

@@ -1,7 +1,7 @@
 package com.jins.permission.exception;
 
 
-import com.jins.permission.constants.Status;
+import com.jins.constants.Status;
 
 /**
  * 业务异常

@@ -54,15 +54,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         Long p = new Random().nextLong();
         user.setUserId(p);
         user.setUsername(registForm.getUsername());
-        // TODO
-        user.setPassword("123456");
+        user.setPassword(registForm.getPassword());
         user.setEmail(registForm.getEmail());
         user.setPhone(registForm.getPhone());
         user.setGmtCreate(new Date());
         save(user);
 
+        // rpc用户角色绑定
         permissionClient.bindDefaultRole(user.getUserId());
 
+        // rabbitmq记录日志
         sendRegisterLog(user, registForm);
 
         return user;
@@ -91,8 +92,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         // 发送消息
         rabbitTemplate.convertAndSend("szml.fanout", "", messageLog);
-
-        System.out.println("------------------------------------------- " + messageLog);
     }
 
     /**

@@ -2,6 +2,7 @@ package com.jins.permission.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.jins.constants.Status;
 import com.jins.permission.constants.RoleConstants;
 import com.jins.permission.domain.entity.Role;
 import com.jins.permission.domain.entity.UserRole;
@@ -9,12 +10,9 @@ import com.jins.permission.exception.BizException;
 import com.jins.permission.mapper.RoleMapper;
 import com.jins.permission.mapper.UserRoleMapper;
 import com.jins.permission.service.PermissionService;
-import com.jins.permission.constants.Status;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor

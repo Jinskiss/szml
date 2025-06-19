@@ -8,6 +8,7 @@ import lombok.Data;
 @Data
 @TableName("operation_logs")
 public class OperationLog {
+    private static final long serialVersionUID = 1L;
 
     /**
      * 日志id

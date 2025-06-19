@@ -11,6 +11,7 @@ import lombok.Data;
 @TableName("roles")
 @Data
 public class Role {
+    private static final long serialVersionUID = 1L;
 
     /**
      * 角色ID

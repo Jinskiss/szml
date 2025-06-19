@@ -14,6 +14,7 @@ import java.util.Date;
 @TableName("users")
 @Data
 public class User {
+    private static final long serialVersionUID = 1L;
 
     /**
      * 用户ID

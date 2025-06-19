@@ -8,10 +8,21 @@ spring:
     active: dev
   # 数据库
   datasource:
-    url: jdbc:mysql://192.168.0.119:4406/ds?serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://192.168.219.101:4406/ds?serverTimezone=Asia/Shanghai
     username: root
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
+  # rabbitmq
+  rabbitmq:
+    host: 192.168.219.101 # 你的虚拟机IP
+    port: 5672 # 端口
+    virtual-host: /szml # 虚拟主机
+    username: szml # 用户名
+    password: 123456 # 密码
+
+    listener:
+      simple:
+        prefetch: 1 # 每次只能获取一条消息，处理完成才能获取下一个消息
 
 # 设置日志级别为DEBUG（开发环境）
 logging:

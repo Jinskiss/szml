@@ -8,6 +8,7 @@ import com.jins.domain.form.RegistForm;
 import com.jins.domain.vo.UserVO;
 import com.jins.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 

@@ -1,0 +1,35 @@
+server:
+  port: 9081
+
+spring:
+  application:
+    name: permission-service # 微服务名称
+  profiles:
+    active: dev
+  # nacos
+  cloud:
+    nacos:
+      server-addr: 192.168.219.101:8848 # nacos地址
+  # 数据库
+  datasource:
+    url: jdbc:mysql://192.168.219.101:4406/ds?serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+# 设置日志级别为DEBUG（开发环境）
+logging:
+  level:
+    com:
+      jins:
+        mapper: debug
+        service: info
+        controller: info
+
+mybatis-plus:
+  configuration:
+    default-enum-type-handler: com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler
+  global-config:
+    db-config:
+      update-strategy: not_null
+      id-type: auto

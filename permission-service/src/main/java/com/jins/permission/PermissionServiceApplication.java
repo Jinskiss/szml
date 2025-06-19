@@ -1,19 +1,17 @@
-package com.jins;
+package com.jins.permission;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Slf4j
 @EnableScheduling
-@EnableFeignClients
 @SpringBootApplication
-public class UserServiceApplication {
+public class PermissionServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(UserServiceApplication.class, args);
+        SpringApplication.run(PermissionServiceApplication.class, args);
     }
 
 }

@@ -18,6 +18,7 @@
     <!-- 引入其他服务 -->
     <modules>
         <module>user-service</module>
+        <module>permission-service</module>
     </modules>
 
     <properties>

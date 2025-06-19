@@ -1,20 +1,27 @@
 server:
   port: 9080
+
 spring:
   application:
     name: user-service # 微服务名称
   profiles:
     active: dev
-  # 数据库
-  datasource:
-    url: jdbc:mysql://localhost:3306/szml?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
-    password: 123456
+  # nacos
+  cloud:
+    nacos:
+      server-addr: 192.168.219.101:8848 # nacos地址
+
+#  # 数据库
+#  datasource:
+#    url: jdbc:mysql://192.168.237.101:4406/szml?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    username: root
+#    password: 123456
   # Redis
+
   redis:
     database: 3
-    host: 192.168.237.101
+    host: 192.168.219.101
     port: 6379
     password: 123456
     lettuce:
@@ -24,6 +31,52 @@ spring:
         max-idle: 8
         max-wait: -1ms
     connect-timeout: 30000ms
+
+  # shardingsphere
+  shardingsphere:
+    mode:
+      type: Memory
+    props:
+      sql-show: true
+
+    datasource:
+      names: ds0,ds1
+
+      ds0:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: jdbc:mysql://192.168.219.101:4407/ds0?serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8
+        username: root
+        password: 123456
+      ds1:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: jdbc:mysql://192.168.219.101:4408/ds1?serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8
+        username: root
+        password: 123456
+
+    # 规则配置
+    rules:
+      sharding:
+        # 单表配置（不分片）
+        #标准分片表配置（数据节点配置）
+        tables:
+          users:
+            actual-data-nodes: ds$->{0..1}.users0
+
+            #分片算法配置（库）
+            database-strategy:
+              standard:
+                sharding-column: user_id
+                sharding-algorithm-name: alg_database
+
+        # 分片算法属性配置
+        sharding-algorithms:
+          alg_database:
+            type: INLINE
+            props:
+              algorithm-expression: ds$->{user_id % 2}
+
 
 # 设置日志级别为DEBUG（开发环境）
 logging:

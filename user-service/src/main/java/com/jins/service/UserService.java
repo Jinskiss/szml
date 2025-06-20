@@ -52,4 +52,18 @@ public interface UserService extends IService<User> {
      * @param updateUser
      */
     void updateUser(User user, User updateUser);
+
+    /**
+     * 将普通用户升级为管理员
+     * @param user
+     * @param userId
+     */
+    void upgradeToAdmin(User user, Long userId);
+
+    /**
+     * 将管理员降级为普通用户
+     * @param user
+     * @param userId
+     */
+    void downgradeToUser(User user, Long userId);
 }

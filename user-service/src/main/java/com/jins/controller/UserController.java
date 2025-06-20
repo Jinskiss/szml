@@ -142,4 +142,39 @@ public class UserController {
         return R.success();
     }
 
+    /**
+     * 将普通用户升级为管理员
+     * @param userId
+     * @return
+     */
+    @PostMapping("/{userId}/upgrade")
+    public R upgradeToAdmin(@PathVariable Long userId) {
+        User user = UserHolder.getUser();
+
+        if (user == null) {
+            return R.error(Status.CODE_500, "用户未登录");
+        }
+
+        userService.upgradeToAdmin(user, userId);
+
+        return R.success();
+    }
+
+    /**
+     * 将管理员降级为普通用户
+     * @param userId
+     * @return
+     */
+    @PostMapping("/{userId}/downgrade")
+    public R downgradeToUser(@PathVariable Long userId) {
+        User user = UserHolder.getUser();
+
+        if (user == null) {
+            return R.error(Status.CODE_500, "用户未登录");
+        }
+
+        userService.downgradeToUser(user, userId);
+
+        return R.success();
+    }
 }

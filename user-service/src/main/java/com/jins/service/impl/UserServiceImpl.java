@@ -448,5 +448,57 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
     }
 
+    /**
+     * 将普通用户升级为管理员
+     * @param user
+     * @param userId
+     */
+    @Override
+    public void upgradeToAdmin(User user, Long userId) {
+        log.info("将普通用户升级为管理员");
 
+        R<String> result = permissionClient.getUserRoleCode(user.getUserId());
+
+        if (result == null || !Objects.equals(result.getCode(), Status.CODE_200) || result.getData() == null) {
+            // 处理错误情况
+            log.error("获取用户角色码失败，用户ID: {}", user.getUserId());
+            throw new BizException(Status.CODE_500, "获取角色码失败");
+        }
+
+        String userRoleCode = result.getData();
+
+        if (!userRoleCode.equals(RoleConstants.SUPER_ADMIN_ROLE)) {
+            log.error("不是超级管理员无法升级用户");
+            throw new BizException(Status.CODE_500, "不是超级管理员无法升级用户");
+        }
+
+        permissionClient.upgradeToAdmin(userId);
+    }
+
+    /**
+     * 将管理员降级为普通用户
+     * @param user
+     * @param userId
+     */
+    @Override
+    public void downgradeToUser(User user, Long userId) {
+        log.info("将管理员降级为普通用户");
+
+        R<String> result = permissionClient.getUserRoleCode(user.getUserId());
+
+        if (result == null || !Objects.equals(result.getCode(), Status.CODE_200) || result.getData() == null) {
+            // 处理错误情况
+            log.error("获取用户角色码失败，用户ID: {}", user.getUserId());
+            throw new BizException(Status.CODE_500, "获取角色码失败");
+        }
+
+        String userRoleCode = result.getData();
+
+        if (!userRoleCode.equals(RoleConstants.SUPER_ADMIN_ROLE)) {
+            log.error("不是超级管理员无法降级管理员");
+            throw new BizException(Status.CODE_500, "不是超级管理员无法降级管理员");
+        }
+
+        permissionClient.downgradeToUser(userId);
+    }
 }

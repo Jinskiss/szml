@@ -18,15 +18,29 @@ public class LogController {
 
     private final LogMapper logMapper;
 
+    /**
+     * 通过logId分页查询日志信息
+     * @param logId
+     * @return
+     */
     @GetMapping("/{logId}")
     public R<OperationLog> getLogById(@PathVariable Long logId) {
         OperationLog log = logMapper.selectById(logId);
+
         if (log == null) {
             return R.error(Status.CODE_404, "日志不存在");
         }
+
         return R.success(log);
     }
 
+    /**
+     * 通过userId分页查询日志信息
+     * @param userId
+     * @param page
+     * @param size
+     * @return
+     */
     @GetMapping("/user/{userId}")
     public R<Page<OperationLog>> getUserLogs(
             @PathVariable Long userId,
@@ -42,21 +56,12 @@ public class LogController {
         return R.success(logPage);
     }
 
-    @GetMapping("/action/{action}")
-    public R<Page<OperationLog>> getActionLogs(
-            @PathVariable String action,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        
-        LambdaQueryWrapper<OperationLog> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper
-                .eq(OperationLog::getAction, action);
-        
-        Page<OperationLog> logPage = logMapper.selectPage(new Page<>(page, size), queryWrapper);
-
-        return R.success(logPage);
-    }
-
+    /**
+     * 查看全部日志消息
+     * @param page
+     * @param size
+     * @return
+     */
     @GetMapping("/recent")
     public R<Page<OperationLog>> getRecentLogs(
             @RequestParam(defaultValue = "1") int page,

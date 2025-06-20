@@ -12,6 +12,12 @@
     <name>user-service</name>
 
     <dependencies>
+        <dependency>
+            <groupId>com.jins</groupId>
+            <artifactId>szml-common</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -122,13 +128,6 @@
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>
             <version>2.9.10</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.jins</groupId>
-            <artifactId>szml-common</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <scope>compile</scope>
         </dependency>
 
     </dependencies>

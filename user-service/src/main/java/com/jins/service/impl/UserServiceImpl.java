@@ -41,9 +41,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Transactional(rollbackFor = Exception.class)
     public User register(RegistForm registForm) {
         //查询用户
-        User user = lambdaQuery()
-                .eq(User::getUsername, registForm.getUsername())
-                .one();
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getUsername, registForm.getUsername());
+        User user = getOne(queryWrapper);
 
         //用户已存在
         if (user != null) {
@@ -51,8 +51,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
 
         user = new User();
-        Long p = new Random().nextLong();
-        user.setUserId(p);
         user.setUsername(registForm.getUsername());
         user.setPassword(registForm.getPassword());
         user.setEmail(registForm.getEmail());
@@ -76,7 +74,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 获取客户端IP
         String clientIp = getClientIp();
 
-        // 构建详细信息（包含注册表单内容）
+        // 构建详细信息
         Map<String, Object> detailMap = new HashMap<>();
         detailMap.put("username", registForm.getUsername());
         detailMap.put("email", registForm.getEmail());
@@ -118,16 +116,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     public String login(LoginForm loginForm) {
+        //查询用户
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper
                 .eq(StringUtils.isNotBlank(loginForm.getUsername()), User::getUsername, loginForm.getUsername())
                 .eq(StringUtils.isNotBlank(loginForm.getPassword()), User::getPassword, loginForm.getPassword());
-
-        //查询用户
-        User user = lambdaQuery()
-                .eq(User::getUsername, loginForm.getUsername())
-                .eq(User::getPassword, loginForm.getPassword())
-                .one();
+        User user = getOne(queryWrapper);
 
         //用户不存在
         if (user == null) {

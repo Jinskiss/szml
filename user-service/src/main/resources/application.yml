@@ -91,15 +91,18 @@ spring:
         # 分片算法属性配置
         sharding-algorithms:
           # 分表算法：user_id % 2 特殊映射
+          # user_id末尾数字小于5放在ds0数据库，大于等于5放在ds1数据库
           alg_database:
             type: INLINE
             props:
-              algorithm-expression: ds$->{user_id % 2}
+              algorithm-expression: >-
+                ds$->{user_id % 10 < 5 ? 0 : 1}
           # 分表算法：user_id % 4 特殊映射
+          # user_id末尾数字为偶数放在user0表，为奇数放在user1表
           alg_table:
             type: INLINE
             props:
-              algorithm-expression: users$->{user_id % 4 % 3}
+              algorithm-expression: users$->{user_id % 4 % 2}
 
 
 # 设置日志级别为DEBUG（开发环境）

@@ -127,7 +127,6 @@ seata:
   # XA模式
   data-source-proxy-mode: AT
 
-
 # 设置日志级别为DEBUG（开发环境）
 logging:
   level:

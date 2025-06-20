@@ -21,6 +21,7 @@ import com.jins.service.UserService;
 import com.jins.utils.TokenUtils;
 import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
@@ -47,6 +49,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     //@Transactional(rollbackFor = Exception.class)
     @GlobalTransactional
     public User register(RegistForm registForm) {
+        log.info("用户注册，用户名: {}", registForm.getUsername());
+
         //查询用户
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getUsername, registForm.getUsername());
@@ -54,7 +58,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         //用户已存在
         if (user != null) {
-            throw new BizException(Status.CODE_403, "用户名已被使用");
+            log.error("用户注册失败，用户名已存在: {}", registForm.getUsername());
+            throw new BizException(Status.CODE_403, "用户名已存在");
         }
 
         user = new User();
@@ -66,11 +71,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         save(user);
 
         // rpc用户角色绑定
+        log.info("绑定用户默认角色，用户ID: {}", user.getUserId());
         permissionClient.bindDefaultRole(user.getUserId());
 
         //int x = 5 / 0;
 
         // rabbitmq记录日志
+        log.info("发送用户注册日志，用户ID: {}", user.getUserId());
         sendRegisterLog(user, registForm);
 
         return user;
@@ -104,6 +111,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     /**
      * 获取客户端IP地址
      */
+    // 借鉴了ai
     private String getClientIp() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (attributes == null) {
@@ -125,6 +133,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     public String login(LoginForm loginForm) {
+        log.info("用户登录，用户名: {}", loginForm.getUsername());
+
         //查询用户
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper
@@ -134,11 +144,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         //用户不存在
         if (user == null) {
+            log.error("用户登录失败，用户名或密码错误，用户名: {}，密码：{}", loginForm.getUsername(), loginForm.getPassword());
             throw new BizException(Status.CODE_403, "用户名或密码错误");
         }
 
         //生成token
         String token = TokenUtils.genToken(user.getUserId().toString(), user.getUsername());
+        log.info("用户登录成功，生成token，{}", token);
 
         //把用户存到redis中
         redisTemplate.opsForValue().set(RedisConstants.USER_TOKEN_KEY + token, user);
@@ -158,9 +170,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     public Page<User> pageList(int page, int rows, User user) {
+        log.info("用户分页查询，用户ID: {}, 页码: {}, 行数: {}", user.getUserId(), page, rows);
+
         R<String> result = permissionClient.getUserRoleCode(user.getUserId());
 
         if (result == null || !Objects.equals(result.getCode(), Status.CODE_200) || result.getData() == null) {
+            log.error("获取用户角色码失败，用户ID: {}", user.getUserId());
             // 处理错误情况
             throw new BizException(Status.CODE_500, "获取角色码失败");
         }
@@ -169,15 +184,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         Page<User> pageList = new Page<>(page, rows);
         if (Objects.equals(userRoleCode, RoleConstants.USER_ROLE)) {
+            log.info("普通用户查询自己信息");
+
             List<User> userList = new ArrayList<>();
             userList.add(user);
             pageList.setRecords(userList);
             pageList.setTotal(1);
         } else if (Objects.equals(userRoleCode, RoleConstants.ADMIN_ROLE)) {
+            log.info("管理员查询所有普通用户");
+
             R<List<Long>> result1 = permissionClient.getUserIdByRoleCode(RoleConstants.USER_ROLE);
 
             if (result1 == null || !Objects.equals(result1.getCode(), Status.CODE_200)) {
                 // 处理错误情况
+                log.error("获取普通用户列表失败，管理员ID: {}", user.getUserId());
                 throw new BizException(Status.CODE_500, "获取普通用户失败");
             }
 
@@ -190,36 +210,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             pageList.setRecords(userList);
             pageList.setTotal(userList.size());
         } else {
-            R<List<Long>> result1 = permissionClient.getUserIdByRoleCode(RoleConstants.USER_ROLE);
-            if (result1 == null || !Objects.equals(result1.getCode(), Status.CODE_200)) {
-                // 处理错误情况
-                throw new BizException(Status.CODE_500, "获取普通用户失败");
-            }
-            R<List<Long>> result2 = permissionClient.getUserIdByRoleCode(RoleConstants.ADMIN_ROLE);
-            if (result2 == null || !Objects.equals(result2.getCode(), Status.CODE_200)) {
-                // 处理错误情况
-                throw new BizException(Status.CODE_500, "获取管理员用户失败");
-            }
-            R<List<Long>> result3 = permissionClient.getUserIdByRoleCode(RoleConstants.SUPER_ADMIN_ROLE);
-            if (result3 == null || !Objects.equals(result3.getCode(), Status.CODE_200)) {
-                // 处理错误情况
-                throw new BizException(Status.CODE_500, "获取超级管理员用户失败");
-            }
+            log.info("超级管理员查询所有用户");
 
-            List<Long> userIdList1 = result1.getData();
-            List<Long> userIdList2 = result2.getData();
-            List<Long> userIdList3 = result3.getData();
-
-            List<Long> userIdList = new ArrayList<>();
-            userIdList.addAll(userIdList1);
-            userIdList.addAll(userIdList2);
-            userIdList.addAll(userIdList3);
-
-            LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper
-                    .in(User::getUserId, userIdList);
-
-            List<User> userList = userMapper.selectList(queryWrapper);
+            List<User> userList = userMapper.selectList(null);
 
             pageList.setRecords(userList);
             pageList.setTotal(userList.size());
@@ -236,10 +229,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     public UserVO getUserInfo(User user, Long queryUserId) {
+        log.info("查询用户信息，当前用户ID: {}, 查询目标用户ID: {}", user.getUserId(), queryUserId);
+
         R<String> result = permissionClient.getUserRoleCode(user.getUserId());
 
         if (result == null || !Objects.equals(result.getCode(), Status.CODE_200) || result.getData() == null) {
             // 处理错误情况
+            log.error("获取用户角色码失败，用户ID: {}", user.getUserId());
             throw new BizException(Status.CODE_500, "获取角色码失败");
         }
 
@@ -248,6 +244,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         UserVO userVO = new UserVO();
         if (Objects.equals(userRoleCode, RoleConstants.USER_ROLE)) {
             if (!user.getUserId().equals(queryUserId)) {
+                log.error("普通用户尝试查看其他用户信息，权限不足");
                 throw new BizException(Status.CODE_500, "用户权限不足");
             }
 
@@ -256,10 +253,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             userVO.setEmail(user.getEmail());
             userVO.setPhone(user.getPhone());
         } else if (Objects.equals(userRoleCode, RoleConstants.ADMIN_ROLE)) {
+            log.info("管理员查询用户信息，当前管理员ID: {}, 目标用户ID: {}", user.getUserId(), queryUserId);
+
             R<String> result1 = permissionClient.getUserRoleCode(queryUserId);
 
             if (result1 == null || !Objects.equals(result1.getCode(), Status.CODE_200) || result1.getData() == null) {
                 // 处理错误情况
+                log.error("获取目标用户角色码失败，目标用户ID: {}", queryUserId);
                 throw new BizException(Status.CODE_500, "获取用户角色码失败");
             }
 
@@ -273,9 +273,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 userVO.setEmail(userInfo.getEmail());
                 userVO.setPhone(userInfo.getPhone());
             } else {
+                log.warn("管理员查看非普通用户信息，权限不足");
                 throw new BizException(Status.CODE_500, "获用户权限不足");
             }
         } else {
+            log.info("超级管理员查询所有用户信息，当前超级管理员ID: {}, 目标用户ID: {}", user.getUserId(), queryUserId);
+
             User userInfo = getById(queryUserId);
 
             userVO.setUserId(userInfo.getUserId());
@@ -294,10 +297,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     public void updateUser(User user, User updateUser) {
+        log.info("修改用户信息，当前用户ID: {}, 目标用户ID: {}", user.getUserId(), updateUser.getUserId());
+
         R<String> result = permissionClient.getUserRoleCode(user.getUserId());
 
         if (result == null || !Objects.equals(result.getCode(), Status.CODE_200) || result.getData() == null) {
             // 处理错误情况
+            log.error("获取用户角色码失败，用户ID: {}", user.getUserId());
             throw new BizException(Status.CODE_500, "获取角色码失败");
         }
 
@@ -305,6 +311,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         if (Objects.equals(userRoleCode, RoleConstants.USER_ROLE)) {
             if (!user.getUserId().equals(updateUser.getUserId())) {
+                log.error("普通用户修改其他用户信息，权限不足");
                 throw new BizException(Status.CODE_500, "用户权限不足");
             }
 
@@ -313,6 +320,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             queryWrapper.eq(User::getUsername, updateUser.getUsername());
             User userTemp = getOne(queryWrapper);
             if (userTemp != null) {
+                log.error("修改失败，用户名已存在");
                 throw new BizException(Status.CODE_500, "用户名已存在");
             }
 
@@ -325,10 +333,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
             userMapper.updateById(userInfo);
         } else if (Objects.equals(userRoleCode, RoleConstants.ADMIN_ROLE)) {
+            log.info("管理员修改用户信息，当前管理员ID: {}, 目标用户ID: {}", user.getUserId(), updateUser.getUserId());
+
             R<String> result1 = permissionClient.getUserRoleCode(updateUser.getUserId());
 
             if (result1 == null || !Objects.equals(result1.getCode(), Status.CODE_200) || result1.getData() == null) {
                 // 处理错误情况
+                log.error("获取用户角色码失败，用户ID: {}", user.getUserId());
                 throw new BizException(Status.CODE_500, "获取用户角色码失败");
             }
 
@@ -337,6 +348,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             queryWrapper.eq(User::getUsername, updateUser.getUsername());
             User userTemp = getOne(queryWrapper);
             if (userTemp != null) {
+                log.error("修改失败，用户名已存在");
                 throw new BizException(Status.CODE_500, "用户名已存在");
             }
 
@@ -352,14 +364,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
                 userMapper.updateById(userInfo);
             } else {
+                log.error("管理员修改非普通用户信息，权限不足");
                 throw new BizException(Status.CODE_500, "获用户权限不足");
             }
         } else {
+            log.info("超级管理员修改用户信息，当前超级管理员ID: {}, 目标用户ID: {}", user.getUserId(), updateUser.getUserId());
+
             //查询用户名是否存在
             LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(User::getUsername, updateUser.getUsername());
             User userTemp = getOne(queryWrapper);
             if (userTemp != null) {
+                log.error("修改失败，用户名已存在");
                 throw new BizException(Status.CODE_500, "用户名已存在");
             }
 
@@ -382,19 +398,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     public void resetPassword(User user, String newPassword) {
+        log.info("重置用户密码");
+
         R<String> result = permissionClient.getUserRoleCode(user.getUserId());
 
         if (result == null || !Objects.equals(result.getCode(), Status.CODE_200) || result.getData() == null) {
             // 处理错误情况
+            log.error("获取用户角色码失败，用户ID: {}", user.getUserId());
             throw new BizException(Status.CODE_500, "获取角色码失败");
         }
 
         String userRoleCode = result.getData();
 
         if (Objects.equals(userRoleCode, RoleConstants.USER_ROLE)) {
+            log.info("普通用户重置自己密码，用户ID: {}", user.getUserId());
             user.setPassword(newPassword);
             userMapper.updateById(user);
         } else if (Objects.equals(userRoleCode, RoleConstants.ADMIN_ROLE)) {
+            log.info("管理员重置所有普通用户密码，管理员ID: {}", user.getUserId());
+
             R<List<Long>> result1 = permissionClient.getUserIdByRoleCode(RoleConstants.USER_ROLE);
 
             if (result1 == null || !Objects.equals(result1.getCode(), Status.CODE_200)) {
@@ -414,36 +436,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 userMapper.updateById(user2);
             }
         } else {
-            R<List<Long>> result1 = permissionClient.getUserIdByRoleCode(RoleConstants.USER_ROLE);
-            if (result1 == null || !Objects.equals(result1.getCode(), Status.CODE_200)) {
-                // 处理错误情况
-                throw new BizException(Status.CODE_500, "获取普通用户失败");
-            }
-            R<List<Long>> result2 = permissionClient.getUserIdByRoleCode(RoleConstants.ADMIN_ROLE);
-            if (result2 == null || !Objects.equals(result2.getCode(), Status.CODE_200)) {
-                // 处理错误情况
-                throw new BizException(Status.CODE_500, "获取管理员用户失败");
-            }
-            R<List<Long>> result3 = permissionClient.getUserIdByRoleCode(RoleConstants.SUPER_ADMIN_ROLE);
-            if (result3 == null || !Objects.equals(result3.getCode(), Status.CODE_200)) {
-                // 处理错误情况
-                throw new BizException(Status.CODE_500, "获取超级管理员用户失败");
-            }
+            log.info("管理员重置所有用户密码，管理员ID: {}", user.getUserId());
 
-            List<Long> userIdList1 = result1.getData();
-            List<Long> userIdList2 = result2.getData();
-            List<Long> userIdList3 = result3.getData();
-
-            List<Long> userIdList = new ArrayList<>();
-            userIdList.addAll(userIdList1);
-            userIdList.addAll(userIdList2);
-            userIdList.addAll(userIdList3);
-
-            LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper
-                    .in(User::getUserId, userIdList);
-
-            List<User> userList = userMapper.selectList(queryWrapper);
+            List<User> userList = userMapper.selectList(null);
 
             for (User user2 : userList) {
                 user2.setPassword(newPassword);
@@ -452,4 +447,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             }
         }
     }
+
+
 }

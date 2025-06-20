@@ -234,6 +234,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * @param queryUserId
      * @return
      */
+    @Override
     public UserVO getUserInfo(User user, Long queryUserId) {
         R<String> result = permissionClient.getUserRoleCode(user.getUserId());
 
@@ -284,6 +285,94 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
 
         return userVO;
+    }
+
+    /**
+     * 修改用户信息
+     * @param user
+     * @param updateUser
+     */
+    @Override
+    public void updateUser(User user, User updateUser) {
+        R<String> result = permissionClient.getUserRoleCode(user.getUserId());
+
+        if (result == null || !Objects.equals(result.getCode(), Status.CODE_200) || result.getData() == null) {
+            // 处理错误情况
+            throw new BizException(Status.CODE_500, "获取角色码失败");
+        }
+
+        String userRoleCode = result.getData();
+
+        if (Objects.equals(userRoleCode, RoleConstants.USER_ROLE)) {
+            if (!user.getUserId().equals(updateUser.getUserId())) {
+                throw new BizException(Status.CODE_500, "用户权限不足");
+            }
+
+            //查询用户名是否存在
+            LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(User::getUsername, updateUser.getUsername());
+            User userTemp = getOne(queryWrapper);
+            if (userTemp != null) {
+                throw new BizException(Status.CODE_500, "用户名已存在");
+            }
+
+            User userInfo = new User();
+            userInfo.setUserId(updateUser.getUserId());
+            userInfo.setUsername(updateUser.getUsername());
+            userInfo.setPassword(updateUser.getPassword());
+            userInfo.setEmail(updateUser.getEmail());
+            userInfo.setPhone(updateUser.getPhone());
+
+            userMapper.updateById(userInfo);
+        } else if (Objects.equals(userRoleCode, RoleConstants.ADMIN_ROLE)) {
+            R<String> result1 = permissionClient.getUserRoleCode(updateUser.getUserId());
+
+            if (result1 == null || !Objects.equals(result1.getCode(), Status.CODE_200) || result1.getData() == null) {
+                // 处理错误情况
+                throw new BizException(Status.CODE_500, "获取用户角色码失败");
+            }
+
+            //查询用户名是否存在
+            LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(User::getUsername, updateUser.getUsername());
+            User userTemp = getOne(queryWrapper);
+            if (userTemp != null) {
+                throw new BizException(Status.CODE_500, "用户名已存在");
+            }
+
+            String queryUserRoleCode = result1.getData();
+
+            if (Objects.equals(queryUserRoleCode, RoleConstants.USER_ROLE)) {
+                User userInfo = new User();
+                userInfo.setUserId(updateUser.getUserId());
+                userInfo.setUsername(updateUser.getUsername());
+                userInfo.setPassword(updateUser.getPassword());
+                userInfo.setEmail(updateUser.getEmail());
+                userInfo.setPhone(updateUser.getPhone());
+
+                userMapper.updateById(userInfo);
+            } else {
+                throw new BizException(Status.CODE_500, "获用户权限不足");
+            }
+        } else {
+            //查询用户名是否存在
+            LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(User::getUsername, updateUser.getUsername());
+            User userTemp = getOne(queryWrapper);
+            if (userTemp != null) {
+                throw new BizException(Status.CODE_500, "用户名已存在");
+            }
+
+            User userInfo = getById(updateUser.getUserId());
+
+            userInfo.setUserId(updateUser.getUserId());
+            userInfo.setUsername(updateUser.getUsername());
+            userInfo.setPassword(updateUser.getPassword());
+            userInfo.setEmail(updateUser.getEmail());
+            userInfo.setPhone(updateUser.getPhone());
+
+            userMapper.updateById(userInfo);
+        }
     }
 
     /**

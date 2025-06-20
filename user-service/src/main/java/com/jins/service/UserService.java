@@ -34,7 +34,7 @@ public interface UserService extends IService<User> {
     /**
      * 通过userId查询用户信息
      * @param user
-     * @param userId
+     * @param queryUserId
      * @return
      */
     UserVO getUserInfo(User user, Long queryUserId);
@@ -45,4 +45,11 @@ public interface UserService extends IService<User> {
      * @param newPassword
      */
     void resetPassword(User user, String newPassword);
+
+    /**
+     * 通过userId修改用户信息
+     * @param user
+     * @param updateUser
+     */
+    void updateUser(User user, User updateUser);
 }

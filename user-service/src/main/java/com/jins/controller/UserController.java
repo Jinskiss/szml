@@ -105,15 +105,23 @@ public class UserController {
         return R.success(userVO);
     }
 
+    /**
+     * 修改用户信息
+     * @param updateUser
+     * @return
+     */
+    @PutMapping("/updateUser")
+    public R updateUser(@RequestBody User updateUser) {
+        User user = UserHolder.getUser();
 
-//    @PutMapping("/{userId}")
-//    public ResponseEntity<UserResponse> updateUser(
-//            @PathVariable Long userId,
-//            @RequestBody UserResponse request,
-//            @RequestHeader("Authorization") String token) {
-//        UserResponse response = userService.updateUser(userId, request, token);
-//        return ResponseEntity.ok(response);
-//    }
+        if (user == null) {
+            return R.error(Status.CODE_500, "用户未登录");
+        }
+
+        userService.updateUser(user, updateUser);
+
+        return R.success();
+    }
 
     /**
      * 重置密码

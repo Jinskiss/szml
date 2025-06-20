@@ -114,14 +114,24 @@ public class UserController {
 //        UserResponse response = userService.updateUser(userId, request, token);
 //        return ResponseEntity.ok(response);
 //    }
-//
-//    @PostMapping("/reset-password")
-//    public ResponseEntity<Void> resetPassword(
-//            @RequestParam Long userId,
-//            @RequestParam String newPassword,
-//            @RequestHeader("Authorization") String token) {
-//        userService.resetPassword(userId, newPassword, token);
-//        return ResponseEntity.ok().build();
-//    }
+
+    /**
+     * 重置密码
+     * @param newPassword
+     * @return
+     */
+    @PostMapping("/reset-password")
+    public R resetPassword(
+            @RequestParam String newPassword) {
+        User user = UserHolder.getUser();
+
+        if (user == null) {
+            return R.error(Status.CODE_500, "用户未登录");
+        }
+
+        userService.resetPassword(user, newPassword);
+
+        return R.success();
+    }
 
 }

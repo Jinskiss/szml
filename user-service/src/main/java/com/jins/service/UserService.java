@@ -14,7 +14,26 @@ public interface UserService extends IService<User> {
      */
     User register(RegistForm registForm);
 
+    /**
+     * 登录
+     * @param request
+     * @return
+     */
     String login(LoginForm request);
 
+    /**
+     * 通过userId查询用户信息
+     * @param page
+     * @param rows
+     * @param user
+     * @return
+     */
     Page<User> pageList(int page, int rows, User user);
+
+    /**
+     * 重置密码
+     * @param user
+     * @param newPassword
+     */
+    void resetPassword(User user, String newPassword);
 }

@@ -155,6 +155,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * @param user
      * @return
      */
+    @Override
     public Page<User> pageList(int page, int rows, User user) {
         R<String> result = permissionClient.getUserRoleCode(user.getUserId());
 
@@ -228,5 +229,87 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
 
         return pageList;
+    }
+
+    /**
+     * 重置密码
+     * @param user
+     * @param newPassword
+     */
+    @Override
+    public void resetPassword(User user, String newPassword) {
+        R<String> result = permissionClient.getUserRoleCode(user.getUserId());
+
+        if (result == null || !Objects.equals(result.getCode(), Status.CODE_200)) {
+            // 处理错误情况
+            throw new BizException(Status.CODE_500, "获取角色码失败");
+        }
+
+        String userRoleCode = result.getData();
+
+        if (userRoleCode == null) {
+            return;
+        }
+
+        if (Objects.equals(userRoleCode, RoleConstants.USER_ROLE)) {
+            user.setPassword(newPassword);
+            userMapper.updateById(user);
+        } else if (Objects.equals(userRoleCode, RoleConstants.ADMIN_ROLE)) {
+            R<List<Long>> result1 = permissionClient.getUserIdByRoleCode(RoleConstants.USER_ROLE);
+
+            if (result1 == null || !Objects.equals(result1.getCode(), Status.CODE_200)) {
+                // 处理错误情况
+                throw new BizException(Status.CODE_500, "获取普通用户失败");
+            }
+
+            List<Long> userIdList = result1.getData();
+
+            LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.in(User::getUserId, userIdList);
+            List<User> userList = userMapper.selectList(queryWrapper);
+
+            for (User user2 : userList) {
+                user2.setPassword(newPassword);
+
+                userMapper.updateById(user2);
+            }
+        } else {
+            R<List<Long>> result1 = permissionClient.getUserIdByRoleCode(RoleConstants.USER_ROLE);
+            if (result1 == null || !Objects.equals(result1.getCode(), Status.CODE_200)) {
+                // 处理错误情况
+                throw new BizException(Status.CODE_500, "获取普通用户失败");
+            }
+            R<List<Long>> result2 = permissionClient.getUserIdByRoleCode(RoleConstants.ADMIN_ROLE);
+            if (result2 == null || !Objects.equals(result2.getCode(), Status.CODE_200)) {
+                // 处理错误情况
+                throw new BizException(Status.CODE_500, "获取管理员用户失败");
+            }
+            R<List<Long>> result3 = permissionClient.getUserIdByRoleCode(RoleConstants.SUPER_ADMIN_ROLE);
+            if (result3 == null || !Objects.equals(result3.getCode(), Status.CODE_200)) {
+                // 处理错误情况
+                throw new BizException(Status.CODE_500, "获取超级管理员用户失败");
+            }
+
+            List<Long> userIdList1 = result1.getData();
+            List<Long> userIdList2 = result2.getData();
+            List<Long> userIdList3 = result3.getData();
+
+            List<Long> userIdList = new ArrayList<>();
+            userIdList.addAll(userIdList1);
+            userIdList.addAll(userIdList2);
+            userIdList.addAll(userIdList3);
+
+            LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper
+                    .in(User::getUserId, userIdList);
+
+            List<User> userList = userMapper.selectList(queryWrapper);
+
+            for (User user2 : userList) {
+                user2.setPassword(newPassword);
+
+                userMapper.updateById(user2);
+            }
+        }
     }
 }

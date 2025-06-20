@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.jins.domain.entity.User;
 import com.jins.domain.form.LoginForm;
 import com.jins.domain.form.RegistForm;
+import com.jins.domain.vo.UserVO;
 
 public interface UserService extends IService<User> {
     /**
@@ -29,6 +30,14 @@ public interface UserService extends IService<User> {
      * @return
      */
     Page<User> pageList(int page, int rows, User user);
+
+    /**
+     * 通过userId查询用户信息
+     * @param user
+     * @param userId
+     * @return
+     */
+    UserVO getUserInfo(User user, Long queryUserId);
 
     /**
      * 重置密码

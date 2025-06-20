@@ -56,13 +56,9 @@ public class PermissionController {
         queryWrapper.eq(Role::getRoleCode, roleCode);
         Long roleId = permissionService.getOne(queryWrapper).getRoleId();
 
-        System.out.println("----------------------------- " + roleId);
-
         LambdaQueryWrapper<UserRole> queryWrapper1 = new LambdaQueryWrapper();
         queryWrapper1.eq(UserRole::getRoleId, roleId);
         List<UserRole> userRoles = userRoleMapper.selectList(queryWrapper1);
-
-        System.out.println("----------------------------- " + userRoles);
 
         List<Long> userIdList = new ArrayList<>();
         for (UserRole userRole : userRoles) {

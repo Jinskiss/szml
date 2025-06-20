@@ -94,13 +94,13 @@ public class UserController {
      */
     @GetMapping("/user/{userId}")
     public R<UserVO> getUserInfo(@PathVariable Long userId) {
-        User user = userService.getById(userId);
+        User user = UserHolder.getUser();
 
-        UserVO userVO = new UserVO();
-        userVO.setUserId(user.getUserId());
-        userVO.setUsername(user.getUsername());
-        userVO.setEmail(user.getEmail());
-        userVO.setPhone(user.getPhone());
+        if (user == null) {
+            return R.error(Status.CODE_500, "用户未登录");
+        }
+
+        UserVO userVO = userService.getUserInfo(user, userId);
 
         return R.success(userVO);
     }

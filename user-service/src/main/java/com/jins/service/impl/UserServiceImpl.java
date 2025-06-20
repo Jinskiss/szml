@@ -13,6 +13,7 @@ import com.jins.constants.Status;
 import com.jins.domain.entity.User;
 import com.jins.domain.form.LoginForm;
 import com.jins.domain.form.RegistForm;
+import com.jins.domain.vo.UserVO;
 import com.jins.entity.MessageLog;
 import com.jins.exception.BizException;
 import com.jins.mapper.UserMapper;
@@ -159,16 +160,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public Page<User> pageList(int page, int rows, User user) {
         R<String> result = permissionClient.getUserRoleCode(user.getUserId());
 
-        if (result == null || !Objects.equals(result.getCode(), Status.CODE_200)) {
+        if (result == null || !Objects.equals(result.getCode(), Status.CODE_200) || result.getData() == null) {
             // 处理错误情况
             throw new BizException(Status.CODE_500, "获取角色码失败");
         }
 
         String userRoleCode = result.getData();
-
-        if (userRoleCode == null) {
-            return null;
-        }
 
         Page<User> pageList = new Page<>(page, rows);
         if (Objects.equals(userRoleCode, RoleConstants.USER_ROLE)) {
@@ -232,6 +229,64 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     /**
+     * 通过userId查询用户信息
+     * @param user
+     * @param queryUserId
+     * @return
+     */
+    public UserVO getUserInfo(User user, Long queryUserId) {
+        R<String> result = permissionClient.getUserRoleCode(user.getUserId());
+
+        if (result == null || !Objects.equals(result.getCode(), Status.CODE_200) || result.getData() == null) {
+            // 处理错误情况
+            throw new BizException(Status.CODE_500, "获取角色码失败");
+        }
+
+        String userRoleCode = result.getData();
+
+        UserVO userVO = new UserVO();
+        if (Objects.equals(userRoleCode, RoleConstants.USER_ROLE)) {
+            if (!user.getUserId().equals(queryUserId)) {
+                throw new BizException(Status.CODE_500, "用户权限不足");
+            }
+
+            userVO.setUserId(user.getUserId());
+            userVO.setUsername(user.getUsername());
+            userVO.setEmail(user.getEmail());
+            userVO.setPhone(user.getPhone());
+        } else if (Objects.equals(userRoleCode, RoleConstants.ADMIN_ROLE)) {
+            R<String> result1 = permissionClient.getUserRoleCode(queryUserId);
+
+            if (result1 == null || !Objects.equals(result1.getCode(), Status.CODE_200) || result1.getData() == null) {
+                // 处理错误情况
+                throw new BizException(Status.CODE_500, "获取用户角色码失败");
+            }
+
+            String queryUserRoleCode = result1.getData();
+
+            if (Objects.equals(queryUserRoleCode, RoleConstants.USER_ROLE)) {
+                User userInfo = getById(queryUserId);
+
+                userVO.setUserId(userInfo.getUserId());
+                userVO.setUsername(userInfo.getUsername());
+                userVO.setEmail(userInfo.getEmail());
+                userVO.setPhone(userInfo.getPhone());
+            } else {
+                throw new BizException(Status.CODE_500, "获用户权限不足");
+            }
+        } else {
+            User userInfo = getById(queryUserId);
+
+            userVO.setUserId(userInfo.getUserId());
+            userVO.setUsername(userInfo.getUsername());
+            userVO.setEmail(userInfo.getEmail());
+            userVO.setPhone(userInfo.getPhone());
+        }
+
+        return userVO;
+    }
+
+    /**
      * 重置密码
      * @param user
      * @param newPassword
@@ -240,16 +295,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public void resetPassword(User user, String newPassword) {
         R<String> result = permissionClient.getUserRoleCode(user.getUserId());
 
-        if (result == null || !Objects.equals(result.getCode(), Status.CODE_200)) {
+        if (result == null || !Objects.equals(result.getCode(), Status.CODE_200) || result.getData() == null) {
             // 处理错误情况
             throw new BizException(Status.CODE_500, "获取角色码失败");
         }
 
         String userRoleCode = result.getData();
-
-        if (userRoleCode == null) {
-            return;
-        }
 
         if (Objects.equals(userRoleCode, RoleConstants.USER_ROLE)) {
             user.setPassword(newPassword);

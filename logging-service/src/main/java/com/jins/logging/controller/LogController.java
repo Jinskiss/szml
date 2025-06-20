@@ -23,6 +23,7 @@ public class LogController {
      * @param logId
      * @return
      */
+    //@ApiOperation("通过logId分页查询日志信息")
     @GetMapping("/{logId}")
     public R<OperationLog> getLogById(@PathVariable Long logId) {
         log.info("查询日志，logId: {}", logId);
@@ -44,6 +45,7 @@ public class LogController {
      * @param size
      * @return
      */
+    //@ApiOperation("通过userId分页查询日志信息")
     @GetMapping("/user/{userId}")
     public R<Page<OperationLog>> getUserLogs(
             @PathVariable Long userId,
@@ -66,6 +68,7 @@ public class LogController {
      * @param size
      * @return
      */
+    //@ApiOperation("查看全部日志消息")
     @GetMapping("/recent")
     public R<Page<OperationLog>> getRecentLogs(
             @RequestParam(defaultValue = "1") int page,

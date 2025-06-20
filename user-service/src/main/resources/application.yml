@@ -6,6 +6,10 @@ spring:
     name: user-service # 微服务名称
   profiles:
     active: dev
+  mvc:
+    pathmatch:
+      # Springfox使用的路径匹配是基于AntPathMatcher的，而Spring Boot 2.6.X使用的是PathPatternMatcher
+      matching-strategy: ant_path_matcher
 
   # nacos
   cloud:
@@ -30,8 +34,8 @@ spring:
 #    driver-class-name: com.mysql.cj.jdbc.Driver
 #    username: root
 #    password: 123456
-  # Redis
 
+  # Redis
   redis:
     database: 3
     host: 192.168.219.101
@@ -124,7 +128,7 @@ seata:
     vgroup-mapping:
       szml: "default"
   enable-auto-data-source-proxy: false
-  # XA模式
+  # AT模式
   data-source-proxy-mode: AT
 
 # 设置日志级别为DEBUG（开发环境）
@@ -143,3 +147,12 @@ mybatis-plus:
     db-config:
       update-strategy: not_null
       id-type: auto
+
+# Swagger配置
+swagger:
+  enabled: true # 启用Swagger
+  title: Knife4j示例 # API文档标题
+  description: Knife4j示例API文档 # API文档描述
+  version: 1.0 # API文档版本
+  contact:
+    name: jins # 联系人姓名

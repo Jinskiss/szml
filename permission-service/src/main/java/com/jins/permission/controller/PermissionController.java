@@ -6,6 +6,8 @@ import com.jins.permission.domain.entity.Role;
 import com.jins.permission.domain.entity.UserRole;
 import com.jins.permission.mapper.UserRoleMapper;
 import com.jins.permission.service.PermissionService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/permission")
 @RequiredArgsConstructor
+@Api(tags = "权限管理", description = "提供权限信息的接口")
 public class PermissionController {
 
     private final PermissionService permissionService;
@@ -29,6 +32,7 @@ public class PermissionController {
     /**
      * 绑定默认角色（普通用户）
      */
+    @ApiOperation("绑定默认角色（普通用户）")
     @PostMapping("/bindDefaultRole")
     @Transactional
     public R bindDefaultRole(@RequestParam Long userId) {
@@ -40,6 +44,7 @@ public class PermissionController {
     /**
      * 查询用户角色代码
      */
+    @ApiOperation("查询用户角色代码")
     @GetMapping("/getRoleCode")
     public R<String> getUserRoleCode(@RequestParam Long userId) {
         String roleCode = permissionService.getUserRoleCode(userId);
@@ -50,6 +55,7 @@ public class PermissionController {
     /**
      * 通过角色码查询用户id
      */
+    @ApiOperation("通过角色码查询用户id")
     @GetMapping("/getUserId")
     public R<List<Long>> getUserIdByRoleCode(@RequestParam String roleCode) {
         LambdaQueryWrapper<Role> queryWrapper = new LambdaQueryWrapper<>();
@@ -71,6 +77,7 @@ public class PermissionController {
     /**
      * 升级用户为管理员（仅限超管操作）
      */
+    @ApiOperation("升级用户为管理员（仅限超管操作）")
     @PostMapping("/upgradeToAdmin")
     public R upgradeToAdmin(@RequestParam Long userId) {
         // TODO
@@ -84,6 +91,7 @@ public class PermissionController {
     /**
      * 降级用户为普通用户（仅限超管操作）
      */
+    @ApiOperation("降级用户为普通用户（仅限超管操作）")
     @PostMapping("/downgradeToUser")
     public R downgradeToUser(@RequestParam Long userId) {
         // TODO

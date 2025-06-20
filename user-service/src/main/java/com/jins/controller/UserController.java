@@ -9,6 +9,8 @@ import com.jins.domain.form.RegistForm;
 import com.jins.domain.vo.UserVO;
 import com.jins.service.UserService;
 import com.jins.utils.UserHolder;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping
 @RequiredArgsConstructor
+@Api(tags = "用户管理", description = "提供用户信息的接口")
 public class UserController {
 
     private final UserService userService;
@@ -28,6 +31,7 @@ public class UserController {
      * @param registForm
      * @return 用户信息
      */
+    @ApiOperation("用户登录接口")
     @PostMapping("/user/register")
     public R<User> register(@Validated @RequestBody RegistForm registForm) {
         if (registForm.getPassword() == null || registForm.getPassword().isEmpty()) {
@@ -42,6 +46,7 @@ public class UserController {
      * @param request
      * @return
      */
+    @ApiOperation("用户注册接口")
     @PostMapping("/user/login")
     public R<String> login(@RequestBody LoginForm request) {
         String token = userService.login(request);
@@ -55,6 +60,7 @@ public class UserController {
      * @param rows
      * @return
      */
+    @ApiOperation("分页查询用户列表")
     @GetMapping("/users")
     public R<Page<UserVO>> listUsers(
             @RequestParam(defaultValue = "0") int page,
@@ -87,11 +93,12 @@ public class UserController {
         return R.success(userVOPage);
     }
 
-     /**
+    /**
      * 通过userId查询用户信息
      * @param userId
      * @return
      */
+    @ApiOperation("通过userId查询用户信息")
     @GetMapping("/user/{userId}")
     public R<UserVO> getUserInfo(@PathVariable Long userId) {
         User user = UserHolder.getUser();
@@ -110,6 +117,7 @@ public class UserController {
      * @param updateUser
      * @return
      */
+    @ApiOperation("修改用户信息")
     @PutMapping("/updateUser")
     public R updateUser(@RequestBody User updateUser) {
         User user = UserHolder.getUser();
@@ -128,6 +136,7 @@ public class UserController {
      * @param newPassword
      * @return
      */
+    @ApiOperation("重置密码")
     @PostMapping("/reset-password")
     public R resetPassword(
             @RequestParam String newPassword) {
@@ -147,6 +156,7 @@ public class UserController {
      * @param userId
      * @return
      */
+    @ApiOperation("将普通用户升级为管理员")
     @PostMapping("/{userId}/upgrade")
     public R upgradeToAdmin(@PathVariable Long userId) {
         User user = UserHolder.getUser();
@@ -165,6 +175,7 @@ public class UserController {
      * @param userId
      * @return
      */
+    @ApiOperation("将管理员降级为普通用户")
     @PostMapping("/{userId}/downgrade")
     public R downgradeToUser(@PathVariable Long userId) {
         User user = UserHolder.getUser();

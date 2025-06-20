@@ -47,7 +47,7 @@ seata:
     vgroup-mapping:
       szml: "default"
   enable-auto-data-source-proxy: false
-  # XA模式
+  # AT模式
   data-source-proxy-mode: AT
 
 # 设置日志级别为DEBUG（开发环境）

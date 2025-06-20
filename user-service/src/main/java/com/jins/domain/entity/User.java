@@ -3,6 +3,7 @@ package com.jins.domain.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.swagger.annotations.ApiModel;
 import lombok.Data;
 
 import java.util.Date;
@@ -13,6 +14,7 @@ import java.util.Date;
  */
 @TableName("users")
 @Data
+@ApiModel(value = "User对象", description = "用户表")
 public class User {
     private static final long serialVersionUID = 1L;
 

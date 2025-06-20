@@ -24,7 +24,13 @@ public class InterceptorConfig implements WebMvcConfigurer {
                 .excludePathPatterns(
                         "/user/login",
                         "/user/register",
-                        "/error" // 添加系统错误路径
+                        "/error", // 添加系统错误路径
+                        "/doc.html",
+                        "/webjars/**",
+                        "/v2/api-docs/**",
+                        "/swagger-resources/**",
+                        "/swagger-ui/**",
+                        "/favicon.ico"
                 )
                 .order(0);
 

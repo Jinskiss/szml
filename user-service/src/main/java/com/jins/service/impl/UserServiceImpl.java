@@ -19,7 +19,6 @@ import com.jins.exception.BizException;
 import com.jins.mapper.UserMapper;
 import com.jins.service.UserService;
 import com.jins.utils.TokenUtils;
-import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -47,7 +46,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     //@Transactional(rollbackFor = Exception.class)
-    @GlobalTransactional
+    //@GlobalTransactional
     public User register(RegistForm registForm) {
         log.info("用户注册，用户名: {}", registForm.getUsername());
 

@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
+
 @FeignClient(name = "permission-service", path = "/permission")
 public interface PermissionClient {
 
@@ -14,6 +16,9 @@ public interface PermissionClient {
 
     @GetMapping("/getRoleCode")
     R<String> getUserRoleCode(@RequestParam("userId") Long userId);
+
+    @GetMapping("/getUserId")
+    R<List<Long>> getUserIdByRoleCode(@RequestParam String roleCode);
 
     @PostMapping("/upgradeToAdmin")
     R<Void> upgradeToAdmin(@RequestParam("userId") Long userId);

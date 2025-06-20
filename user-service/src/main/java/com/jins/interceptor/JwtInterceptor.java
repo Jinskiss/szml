@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.util.WebUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,6 +33,11 @@ public class JwtInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+//        // 排除错误处理路径
+//        if (request.getAttribute(WebUtils.ERROR_STATUS_CODE_ATTRIBUTE) != null) {
+//            return true; // 直接放行错误请求
+//        }
+
         String token = request.getHeader("Authorization");
         if (token != null) {
             token = token.substring("Bearer ".length());

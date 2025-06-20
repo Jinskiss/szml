@@ -51,6 +51,10 @@ spring:
       type: Memory
     props:
       sql-show: true
+    # 关键：配置事务管理器
+    transaction:
+      type: AT
+      provider-type: SeataAT
 
     datasource:
       names: ds0,ds1
@@ -103,6 +107,25 @@ spring:
             type: INLINE
             props:
               algorithm-expression: users$->{user_id % 4 % 2}
+
+# Seata 配置
+seata:
+  registry:
+    type: nacos
+    nacos:
+      server-addr: 192.168.0.113:8848
+      namespace: ""
+      group: DEFAULT_GROUP
+      application: seata-server
+      username: nacos
+      password: nacos
+  tx-service-group: szml
+  service:
+    vgroup-mapping:
+      szml: "default"
+  enable-auto-data-source-proxy: false
+  # XA模式
+  data-source-proxy-mode: AT
 
 
 # 设置日志级别为DEBUG（开发环境）

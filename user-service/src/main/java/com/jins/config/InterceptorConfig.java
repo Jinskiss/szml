@@ -22,8 +22,9 @@ public class InterceptorConfig implements WebMvcConfigurer {
         registry.addInterceptor(jwtInterceptor)
                 .addPathPatterns("/**")
                 .excludePathPatterns(
-                        "/user/login", "/user/register", "/file/**",
-                        "/user/page", "/getById", "/wxPay/code2openid2"
+                        "/user/login",
+                        "/user/register",
+                        "/error" // 添加系统错误路径
                 )
                 .order(0);
 

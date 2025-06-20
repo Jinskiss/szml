@@ -2,11 +2,13 @@ package com.jins.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jins.common.R;
+import com.jins.constants.Status;
 import com.jins.domain.entity.User;
 import com.jins.domain.form.LoginForm;
 import com.jins.domain.form.RegistForm;
 import com.jins.domain.vo.UserVO;
 import com.jins.service.UserService;
+import com.jins.utils.UserHolder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -57,7 +59,13 @@ public class UserController {
     public R<Page<UserVO>> listUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int rows) {
-        Page<User> userPage = userService.page(new Page<>(page, rows), null);
+        User user1 = UserHolder.getUser();
+
+        if (user1 == null) {
+            return R.error(Status.CODE_500, "用户未登录");
+        }
+
+        Page<User> userPage = userService.pageList(page, rows, user1);
 
         List<UserVO> userVOList = new ArrayList<>();
         if (!userPage.getRecords().isEmpty()) {

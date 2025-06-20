@@ -3,10 +3,12 @@ package com.jins.handler;
 import com.jins.common.R;
 import com.jins.constants.Status;
 import com.jins.exception.BizException;
+import com.rabbitmq.tools.json.JSONUtil;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
  * 全局异常处理
@@ -17,8 +19,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author: sunny
  * @date: 2023-11-10
  */
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
+
 
     /**
      * 拦截业务异常
@@ -26,7 +29,6 @@ public class GlobalExceptionHandler {
      * @param e 业务异常
      * @return R
      */
-    @ResponseBody
     @ExceptionHandler(BizException.class)
     public R handle(BizException e) {
         return R.error(e.getCode(), e.getMessage());
@@ -35,10 +37,19 @@ public class GlobalExceptionHandler {
     /**
      * 自定义验证异常
      */
-    @ResponseBody
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public R handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         String message = e.getBindingResult().getFieldError().getDefaultMessage();
         return R.error(Status.CODE_403, message);
+    }
+
+    /**
+     * 其他异常
+     * @param e
+     * @return
+     */
+    @ExceptionHandler(Exception.class)
+    public R handleAllException(Exception e) {
+        return R.error(Status.CODE_500, "系统内部错误: " + e.getMessage());
     }
 }

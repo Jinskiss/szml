@@ -17,6 +17,25 @@ spring:
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+# Seata 配置
+seata:
+  registry:
+    type: nacos
+    nacos:
+      server-addr: 192.168.0.113:8848
+      namespace: ""
+      group: DEFAULT_GROUP
+      application: seata-server
+      username: nacos
+      password: nacos
+  tx-service-group: szml
+  service:
+    vgroup-mapping:
+      szml: "default"
+  enable-auto-data-source-proxy: false
+  # XA模式
+  data-source-proxy-mode: AT
+
 # 设置日志级别为DEBUG（开发环境）
 logging:
   level:

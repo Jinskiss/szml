@@ -3,9 +3,12 @@ package com.jins.service.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jins.client.PermissionClient;
+import com.jins.common.R;
 import com.jins.constants.RedisConstants;
+import com.jins.constants.RoleConstants;
 import com.jins.constants.Status;
 import com.jins.domain.entity.User;
 import com.jins.domain.form.LoginForm;
@@ -15,6 +18,7 @@ import com.jins.exception.BizException;
 import com.jins.mapper.UserMapper;
 import com.jins.service.UserService;
 import com.jins.utils.TokenUtils;
+import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -36,9 +40,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private final PermissionClient permissionClient;
 
     private final RabbitTemplate rabbitTemplate;
+    private final UserMapper userMapper;
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    //@Transactional(rollbackFor = Exception.class)
+    @GlobalTransactional
     public User register(RegistForm registForm) {
         //查询用户
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
@@ -60,6 +66,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         // rpc用户角色绑定
         permissionClient.bindDefaultRole(user.getUserId());
+
+        //int x = 5 / 0;
 
         // rabbitmq记录日志
         sendRegisterLog(user, registForm);
@@ -138,5 +146,87 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         redisTemplate.expire(RedisConstants.USER_TOKEN_KEY + token, RedisConstants.USER_TOKEN_TTL, TimeUnit.MINUTES);
 
         return token;
+    }
+
+    /**
+     * 用户分页查询
+     * @param page
+     * @param rows
+     * @param user
+     * @return
+     */
+    public Page<User> pageList(int page, int rows, User user) {
+        R<String> result = permissionClient.getUserRoleCode(user.getUserId());
+
+        if (result == null || !Objects.equals(result.getCode(), Status.CODE_200)) {
+            // 处理错误情况
+            throw new BizException(Status.CODE_500, "获取角色码失败");
+        }
+
+        String userRoleCode = result.getData();
+
+        if (userRoleCode == null) {
+            return null;
+        }
+
+        Page<User> pageList = new Page<>(page, rows);
+        if (Objects.equals(userRoleCode, RoleConstants.USER_ROLE)) {
+            List<User> userList = new ArrayList<>();
+            userList.add(user);
+            pageList.setRecords(userList);
+            pageList.setTotal(1);
+        } else if (Objects.equals(userRoleCode, RoleConstants.ADMIN_ROLE)) {
+            R<List<Long>> result1 = permissionClient.getUserIdByRoleCode(RoleConstants.USER_ROLE);
+
+            if (result1 == null || !Objects.equals(result1.getCode(), Status.CODE_200)) {
+                // 处理错误情况
+                throw new BizException(Status.CODE_500, "获取普通用户失败");
+            }
+
+            List<Long> userIdList = result1.getData();
+
+            LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.in(User::getUserId, userIdList);
+            List<User> userList = userMapper.selectList(queryWrapper);
+
+            pageList.setRecords(userList);
+            pageList.setTotal(userList.size());
+        } else {
+            R<List<Long>> result1 = permissionClient.getUserIdByRoleCode(RoleConstants.USER_ROLE);
+            if (result1 == null || !Objects.equals(result1.getCode(), Status.CODE_200)) {
+                // 处理错误情况
+                throw new BizException(Status.CODE_500, "获取普通用户失败");
+            }
+            R<List<Long>> result2 = permissionClient.getUserIdByRoleCode(RoleConstants.ADMIN_ROLE);
+            if (result2 == null || !Objects.equals(result2.getCode(), Status.CODE_200)) {
+                // 处理错误情况
+                throw new BizException(Status.CODE_500, "获取管理员用户失败");
+            }
+            R<List<Long>> result3 = permissionClient.getUserIdByRoleCode(RoleConstants.SUPER_ADMIN_ROLE);
+            if (result3 == null || !Objects.equals(result3.getCode(), Status.CODE_200)) {
+                // 处理错误情况
+                throw new BizException(Status.CODE_500, "获取超级管理员用户失败");
+            }
+
+            List<Long> userIdList1 = result1.getData();
+            List<Long> userIdList2 = result2.getData();
+            List<Long> userIdList3 = result3.getData();
+
+            List<Long> userIdList = new ArrayList<>();
+            userIdList.addAll(userIdList1);
+            userIdList.addAll(userIdList2);
+            userIdList.addAll(userIdList3);
+
+            LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper
+                    .in(User::getUserId, userIdList);
+
+            List<User> userList = userMapper.selectList(queryWrapper);
+
+            pageList.setRecords(userList);
+            pageList.setTotal(userList.size());
+        }
+
+        return pageList;
     }
 }

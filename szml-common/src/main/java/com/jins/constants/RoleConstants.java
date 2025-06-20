@@ -1,4 +1,4 @@
-package com.jins.permission.constants;
+package com.jins.constants;
 
 public class RoleConstants {
     /**

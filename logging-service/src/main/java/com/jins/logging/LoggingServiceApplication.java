@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Slf4j
 @EnableScheduling
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"com.jins.logging", "com.jins"})
 public class LoggingServiceApplication {
 
     public static void main(String[] args) {

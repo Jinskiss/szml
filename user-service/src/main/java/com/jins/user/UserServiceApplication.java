@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableScheduling
 @EnableFeignClients
-@SpringBootApplication(scanBasePackages = "com.jins.user")
+@SpringBootApplication(scanBasePackages = {"com.jins.user", "com.jins"})
 public class UserServiceApplication {
 
     public static void main(String[] args) {

@@ -9,6 +9,7 @@ import com.jins.permission.service.PermissionService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +20,7 @@ import java.util.List;
 /**
  * 权限服务RPC接口控制器
  */
+@Slf4j
 @RestController
 @RequestMapping("/permission")
 @RequiredArgsConstructor
@@ -36,6 +38,8 @@ public class PermissionController {
     @PostMapping("/bindDefaultRole")
     @Transactional
     public R bindDefaultRole(@RequestParam Long userId) {
+        log.info("绑定默认角色（普通用户）");
+
         permissionService.bindDefaultRole(userId);
 
         return R.success("角色绑定成功");
@@ -47,6 +51,8 @@ public class PermissionController {
     @ApiOperation("查询用户角色代码")
     @GetMapping("/getRoleCode")
     public R<String> getUserRoleCode(@RequestParam Long userId) {
+        log.info("查询用户角色代码");
+
         String roleCode = permissionService.getUserRoleCode(userId);
 
         return R.success(roleCode);
@@ -58,6 +64,8 @@ public class PermissionController {
     @ApiOperation("通过角色码查询用户id")
     @GetMapping("/getUserId")
     public R<List<Long>> getUserIdByRoleCode(@RequestParam String roleCode) {
+        log.info("通过角色码查询用户id");
+
         LambdaQueryWrapper<Role> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Role::getRoleCode, roleCode);
         Long roleId = permissionService.getOne(queryWrapper).getRoleId();
@@ -80,8 +88,7 @@ public class PermissionController {
     @ApiOperation("升级用户为管理员（仅限超管操作）")
     @PostMapping("/upgradeToAdmin")
     public R upgradeToAdmin(@RequestParam Long userId) {
-        // TODO
-        // 判断是否为超管
+        log.info("升级用户为管理员（仅限超管操作）");
 
         permissionService.upgradeToAdmin(userId);
 
@@ -94,8 +101,7 @@ public class PermissionController {
     @ApiOperation("降级用户为普通用户（仅限超管操作）")
     @PostMapping("/downgradeToUser")
     public R downgradeToUser(@RequestParam Long userId) {
-        // TODO
-        // 判断是否为超管
+        log.info("降级用户为普通用户（仅限超管操作）");
 
         permissionService.downgradeToUser(userId);
 

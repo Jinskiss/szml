@@ -30,7 +30,7 @@ public class LogController {
     @ApiOperation("通过logId分页查询日志信息")
     @GetMapping("/{logId}")
     public R<OperationLog> getLogById(@PathVariable Long logId) {
-        log.info("查询日志，logId: {}", logId);
+        log.info("通过logId分页查询日志信息");
 
         OperationLog operationLog = logMapper.selectById(logId);
 
@@ -55,7 +55,7 @@ public class LogController {
             @PathVariable Long userId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
-        log.info("查询用户日志，userId: {}, 页码: {}, 每页大小: {}", userId, page, size);
+        log.info("通过userId分页查询日志信息");
         
         LambdaQueryWrapper<OperationLog> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper
@@ -77,7 +77,7 @@ public class LogController {
     public R<Page<OperationLog>> getRecentLogs(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
-        log.info("查询全部日志，页码: {}, 每页大小: {}", page, size);
+        log.info("查看全部日志消息");
 
         Page<OperationLog> logPage = logMapper.selectPage(new Page<>(page, size), null);
 

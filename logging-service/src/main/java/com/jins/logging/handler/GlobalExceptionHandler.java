@@ -1,8 +1,8 @@
-package com.jins.permission.handler;
+package com.jins.logging.handler;
 
 import com.jins.common.R;
 import com.jins.constants.Status;
-import com.jins.permission.exception.BizException;
+import com.jins.logging.exception.BizException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;

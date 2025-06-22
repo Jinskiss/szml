@@ -46,6 +46,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private final RabbitTemplate rabbitTemplate;
     private final UserMapper userMapper;
 
+    /**
+     * 注册
+     * @param registForm
+     * @return
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     //@GlobalTransactional
@@ -90,7 +95,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     private void sendRegisterLog(User user, RegistForm registForm) {
         // 获取客户端IP
-        String clientIp = getClientIp();
+        String clientIp = "192.168.219.131";
 
         // 构建详细信息
         Map<String, Object> detailMap = new HashMap<>();
@@ -108,23 +113,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         // 发送消息
         rabbitTemplate.convertAndSend("szml.fanout", "", messageLog);
-    }
-
-    /**
-     * 获取客户端IP地址
-     */
-    // 借鉴了ai
-    private String getClientIp() {
-        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        if (attributes == null) {
-            return "unknown";
-        }
-        HttpServletRequest request = attributes.getRequest();
-        String xffHeader = request.getHeader("X-Forwarded-For");
-        if (xffHeader == null) {
-            return request.getRemoteAddr();
-        }
-        return xffHeader.split(",")[0];
     }
 
     /**

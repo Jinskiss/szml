@@ -23,14 +23,14 @@ public class LogController {
     private final LogMapper logMapper;
 
     /**
-     * 通过logId分页查询日志信息
+     * 通过logId查询日志信息
      * @param logId
      * @return
      */
-    @ApiOperation("通过logId分页查询日志信息")
+    @ApiOperation("通过logId查询日志信息")
     @GetMapping("/{logId}")
     public R<OperationLog> getLogById(@PathVariable Long logId) {
-        log.info("通过logId分页查询日志信息");
+        log.info("通过logId查询日志信息");
 
         OperationLog operationLog = logMapper.selectById(logId);
 
@@ -82,5 +82,46 @@ public class LogController {
         Page<OperationLog> logPage = logMapper.selectPage(new Page<>(page, size), null);
 
         return R.success(logPage);
+    }
+
+    /**
+     * 通过logId删除日志信息
+     * @param logId
+     * @return
+     */
+    @ApiOperation("通过logId删除日志信息")
+    @DeleteMapping("/delete/{logId}")
+    public R deleteLogById(@PathVariable Long logId) {
+        log.info("通过logId删除日志信息");
+
+        OperationLog operationLog = logMapper.selectById(logId);
+
+        if (operationLog == null) {
+            log.error("日志不存在，logId: {}", logId);
+            return R.error(Status.CODE_404, "日志不存在");
+        }
+
+        logMapper.deleteById(logId);
+
+        return R.success();
+    }
+
+    /**
+     * 通过userId删除日志信息
+     * @param userId
+     * @return
+     */
+    @ApiOperation("通过userId删除日志信息")
+    @DeleteMapping("/delete/user/{userId}")
+    public R deleteUserLogs(@PathVariable Long userId) {
+        log.info("通过userId删除日志信息");
+
+        LambdaQueryWrapper<OperationLog> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper
+                .eq(OperationLog::getUserId, userId);
+
+        logMapper.delete(queryWrapper);
+
+        return R.success();
     }
 }

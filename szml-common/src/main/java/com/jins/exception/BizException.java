@@ -6,9 +6,6 @@ import com.jins.constants.Status;
 /**
  * 业务异常
  * 在业务运行中，抛出的异常错误
- *
- * @author: sunny
- * @date: 2023-11-10
  */
 public class BizException extends RuntimeException {
 

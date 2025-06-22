@@ -21,6 +21,7 @@ import com.jins.entity.MessageLog;
 import com.jins.user.mapper.UserMapper;
 import com.jins.user.service.UserService;
 import com.jins.user.utils.TokenUtils;
+import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shardingsphere.transaction.annotation.ShardingTransactionType;
@@ -51,8 +52,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * @return
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    //@GlobalTransactional
+    @Transactional()
+    @GlobalTransactional
     @ShardingTransactionType(TransactionType.BASE)
     public User register(RegistForm registForm) {
         log.info("用户注册，用户名: {}", registForm.getUsername());

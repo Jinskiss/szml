@@ -15,6 +15,7 @@ import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +31,8 @@ public class PermissionServiceImpl extends ServiceImpl<RoleMapper, Role> impleme
      */
     @Override
     @GlobalLock
+    @Transactional(rollbackFor = Exception.class)
+    @GlobalTransactional
     public void bindDefaultRole(Long userId) {
         log.info("为用户绑定默认角色，用户ID: {}", userId);
 
@@ -55,6 +58,8 @@ public class PermissionServiceImpl extends ServiceImpl<RoleMapper, Role> impleme
         UserRole userRole = new UserRole();
         userRole.setUserId(userId);
         userRole.setRoleId(role.getRoleId());
+
+        int x = 5 / 0;
 
         if (userRoleMapper.insert(userRole) < 1) {
             log.error("角色绑定失败，用户ID: {}, 角色ID: {}", userId, role.getRoleId());

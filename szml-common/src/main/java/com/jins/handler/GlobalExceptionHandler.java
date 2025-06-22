@@ -12,9 +12,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * <p>
  * 处理接口中抛出的业务异常 {@link BizException}，返回 {@link R} 结构
  * 全局异常，可以统一异常的处理，不需要每个地方都写相关处理逻辑
- *
- * @author: sunny
- * @date: 2023-11-10
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {

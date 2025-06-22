@@ -6,6 +6,7 @@ import com.jins.permission.domain.entity.Role;
 import com.jins.permission.domain.entity.UserRole;
 import com.jins.permission.mapper.UserRoleMapper;
 import com.jins.permission.service.PermissionService;
+import io.seata.spring.annotation.GlobalTransactional;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +37,6 @@ public class PermissionController {
      */
     @ApiOperation("绑定默认角色（普通用户）")
     @PostMapping("/bindDefaultRole")
-    @Transactional
     public R bindDefaultRole(@RequestParam Long userId) {
         log.info("绑定默认角色（普通用户）");
 

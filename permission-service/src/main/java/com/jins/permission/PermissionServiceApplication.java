@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Slf4j
 @EnableScheduling
-@SpringBootApplication(scanBasePackages = {"com.jins.permission", "com.jins"})
+@SpringBootApplication(scanBasePackages = {"com.jins.permission"})
 public class PermissionServiceApplication {
 
     public static void main(String[] args) {

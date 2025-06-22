@@ -5,9 +5,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.jins.constants.MQConstants;
 import com.jins.exception.BizException;
 import com.jins.user.client.PermissionClient;
 import com.jins.common.R;
+import com.jins.user.constants.ActionConstants;
 import com.jins.user.constants.RedisConstants;
 import com.jins.constants.RoleConstants;
 import com.jins.constants.Status;
@@ -27,10 +29,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -77,7 +76,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setGmtCreate(new Date());
         save(user);
 
-        int x = 5 / 0;
+        //int x = 5 / 0;
 
         // rpc用户角色绑定
         log.info("绑定用户默认角色，用户ID: {}", user.getUserId());
@@ -107,12 +106,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 创建日志消息
         MessageLog messageLog = new MessageLog();
         messageLog.setUserId(user.getUserId());
-        messageLog.setAction("user_register");
+        messageLog.setAction(ActionConstants.USER_REGISTER);
         messageLog.setIp(clientIp);
         messageLog.setDetail(JSONObject.toJSONString(detailMap));
 
         // 发送消息
-        rabbitTemplate.convertAndSend("szml.fanout", "", messageLog);
+        rabbitTemplate.convertAndSend(MQConstants.EXCHANGE_FANOUT_NAME, "", messageLog);
     }
 
     /**

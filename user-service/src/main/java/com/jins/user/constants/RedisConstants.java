@@ -2,9 +2,6 @@ package com.jins.user.constants;
 
 /**
  * Redis 常量
- *
- * @author: sunny
- * @date: 2023-11-10
  */
 public class RedisConstants {
 

@@ -1,5 +1,6 @@
 package com.jins.logging.listener;
 
+import com.jins.constants.MQConstants;
 import com.jins.entity.MessageLog;
 import com.jins.logging.domain.entity.OperationLog;
 import com.jins.logging.mapper.LogMapper;
@@ -24,8 +25,8 @@ public class LogMessageListener {
     private final LogMapper logMapper;
 
     @RabbitListener(bindings = @QueueBinding(
-            value = @Queue(name = "fanout.queue", durable = "true"),
-            exchange = @Exchange(name = "szml.fanout")
+            value = @Queue(name = MQConstants.QUEUE_FANOUT_NAME, durable = "true"),
+            exchange = @Exchange(name = MQConstants.EXCHANGE_FANOUT_NAME)
     ))
     @GlobalLock
     public void handleLogMessage(MessageLog messageLog) {
